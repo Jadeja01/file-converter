@@ -1,11 +1,9 @@
 export default function FooterPage() {
     return (
-      <footer
-        className="bg-white bg-opacity-80 rounded-xl shadow-md text-gray-500 text-sm mx-auto mt-8 mb-4 px-6 py-3 w-fit text-center opacity-90"
-        style={{ backdropFilter: 'blur(2px)' }}
-      >
-        &copy; {new Date().getFullYear()} File Formater. All rights reserved.
-      </footer>
+			<footer className="w-full bg-[#471396] text-white py-6 mt-12 text-center">
+				<div className="mb-2 font-bold text-lg">FriendlyPDF</div>
+				<div className="text-sm">© {new Date().getFullYear()} All rights reserved. | Made with ❤️ for easy pdf operatiosns.</div>
+			</footer>
     );
   }
   

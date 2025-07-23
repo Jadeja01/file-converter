@@ -1,8 +1,5 @@
-"use client";
 import Link from "next/link";
-import { useState } from "react";
-import NavbarPage from "./(components)/navbar/page";
-import { listOfConversions,listOfFormats,pdfTools,testimonials} from "./(components)/convert/listofconv";
+import { pdfTools,testimonials} from "./(components)/convert/listofconv";
 
 export default function Home() {
 

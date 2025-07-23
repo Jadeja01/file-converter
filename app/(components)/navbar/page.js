@@ -25,11 +25,11 @@ export default function NavbarPage() {
 
         {/* Convert PDF Dropdown */}
         <div
-          onMouseOver={() => setHovered("convert")}
-          onMouseOut={() => setHovered("")}
+          onMouseEnter={() => setHovered("convert")}
+          onMouseLeave={() => setHovered("")}
           className="relative"
         >
-          <span className="hover:text-[#7F53AC] cursor-pointer">CONVERT PDF</span>
+          <span className="hover:text-[#7F53AC] cursor-pointer">CONVERT PDF<i className="ml-1 fa-solid fa-caret-down"></i></span>
           {hovered === "convert" && (
             <div className="absolute left-1/2 -translate-x-1/2 mt-2 bg-white border border-indigo-200 rounded-lg shadow-lg p-4 z-50 w-[340px]">
               <div className="font-bold text-[#471396] mb-2">Conversion Options</div>
@@ -50,11 +50,11 @@ export default function NavbarPage() {
 
         {/* All Tools Dropdown */}
         <div
-          onMouseOver={() => setHovered("allPdfTools")}
-          onMouseOut={() => setHovered("")}
+          onMouseEnter={() => setHovered("allPdfTools")}
+          onMouseLeave={() => setHovered("")}
           className="relative"
         >
-          <span className="hover:text-[#7F53AC] cursor-pointer">ALL PDF TOOLS</span>
+          <span className="hover:text-[#7F53AC] cursor-pointer">ALL PDF TOOLS<i className="ml-1 fa-solid fa-caret-down"></i></span>
           {hovered === "allPdfTools" && (
             <div className="absolute left-1/2 -translate-x-1/2 mt-2 bg-white border border-indigo-200 rounded-lg shadow-lg p-4 z-50 w-[360px]">
               <div className="font-bold text-[#471396] mb-2">All PDF Tools</div>

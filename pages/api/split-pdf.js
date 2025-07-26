@@ -102,7 +102,7 @@ export default async function handler(req, res) {
       tempSplitedFilePaths.map((filePath) => fs.unlink(filePath))
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       url: `/${zipName}`,
     });

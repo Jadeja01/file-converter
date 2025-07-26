@@ -1,14 +1,14 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { operatiosns } from "../(components)/convert/listofconv";
 import Link from "next/link";
+import { operatiosns } from "../listofconv";
 
-export default function OperationPage() {
+export default function ConversionPage() {
   
-  const { operation } = useParams();
-  console.log("Operation:", operation);
-  const op = operatiosns.find((op) => op.href === "/" + operation);
+  const { conv_type } = useParams();
+    console.log("Conversion Type:", conv_type);
+  const op = operatiosns.find((op) => op.href === "/convert/" + conv_type);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState([]);

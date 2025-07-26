@@ -1,25 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-
-const pdfFormats = [
-  { label: "PDF", value: "pdf" },
-  { label: "Word (DOCX)", value: "docx" },
-  { label: "JPG", value: "jpg" },
-  { label: "PNG", value: "png" },
-  { label: "Text (TXT)", value: "txt" },
-];
-
-const pdfConversions = [
-  { from: "pdf", to: "docx", desc: "Convert PDF to editable Word document." },
-  { from: "pdf", to: "jpg", desc: "Convert PDF pages to JPG images." },
-  { from: "pdf", to: "png", desc: "Convert PDF pages to PNG images." },
-  { from: "pdf", to: "txt", desc: "Extract text from PDF." },
-  { from: "docx", to: "pdf", desc: "Convert Word document to PDF." },
-  { from: "jpg", to: "pdf", desc: "Convert JPG image to PDF." },
-  { from: "png", to: "pdf", desc: "Convert PNG image to PDF." },
-  { from: "txt", to: "pdf", desc: "Convert text file to PDF." },
-];
+import { pdfConversions, pdfFormats } from "./listofconv";
 
 export default function ConvertPage() {
   const [fromType, setFromType] = useState(pdfFormats[0].value);
@@ -78,7 +60,7 @@ export default function ConvertPage() {
         <Link
           href={
             fromType && toType && selectedConversion
-              ? `/${fromType}-to-${toType}`
+              ? `/convert/${fromType}-to-${toType}`
               : "#"
           }
           className={`bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md hover:scale-105 transition-all ${
@@ -106,7 +88,7 @@ export default function ConvertPage() {
               </span>
               <div className="text-gray-700 text-sm mt-1">{c.desc}</div>
               <Link
-                href={`/${c.from}-to-${c.to}`}
+                href={`/convert/${c.from}-to-${c.to}`}
                 className="inline-block mt-2 text-indigo-600 font-semibold hover:underline"
               >
                 Try Now

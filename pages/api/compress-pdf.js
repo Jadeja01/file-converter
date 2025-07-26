@@ -23,7 +23,9 @@ const parseForm = (req) => {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ success: false, message: "Method not allowed" });
+    return res
+      .status(405)
+      .json({ success: false, message: "Method not allowed" });
   }
 
   try {
@@ -31,13 +33,19 @@ export default async function handler(req, res) {
     const uploadedFilesRaw = files.file;
 
     if (!uploadedFilesRaw) {
-      return res.status(400).json({ success: false, message: "No files uploaded" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No files uploaded" });
     }
 
-    const uploadedFiles = Array.isArray(uploadedFilesRaw) ? uploadedFilesRaw : [uploadedFilesRaw];
+    const uploadedFiles = Array.isArray(uploadedFilesRaw)
+      ? uploadedFilesRaw
+      : [uploadedFilesRaw];
 
-    if (uploadedFiles.length === 0 || uploadedFiles.some(f => f.size === 0)) {
-      return res.status(400).json({ success: false, message: "File is empty or missing" });
+    if (uploadedFiles.length === 0 || uploadedFiles.some((f) => f.size === 0)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "File is empty or missing" });
     }
 
     // ✅ Handle Single File Upload (No ZIP)
@@ -47,7 +55,10 @@ export default async function handler(req, res) {
 
       const originalPdf = await PDFDocument.load(buffer);
       const compressedPdf = await PDFDocument.create();
-      const copiedPages = await compressedPdf.copyPages(originalPdf, originalPdf.getPageIndices());
+      const copiedPages = await compressedPdf.copyPages(
+        originalPdf,
+        originalPdf.getPageIndices()
+      );
       copiedPages.forEach((page) => compressedPdf.addPage(page));
 
       const compressedBuffer = await compressedPdf.save();
@@ -71,7 +82,10 @@ export default async function handler(req, res) {
 
       const originalPdf = await PDFDocument.load(buffer);
       const compressedPdf = await PDFDocument.create();
-      const copiedPages = await compressedPdf.copyPages(originalPdf, originalPdf.getPageIndices());
+      const copiedPages = await compressedPdf.copyPages(
+        originalPdf,
+        originalPdf.getPageIndices()
+      );
       copiedPages.forEach((page) => compressedPdf.addPage(page));
 
       const compressedBuffer = await compressedPdf.save();
@@ -96,9 +110,14 @@ export default async function handler(req, res) {
       success: true,
       url: `/${zipName}`,
     });
-
   } catch (error) {
     console.error("Compression failed:", error);
-    return res.status(500).json({ success: false, message: "Compression failed", error: error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Compression failed",
+        error: error.message,
+      });
   }
 }

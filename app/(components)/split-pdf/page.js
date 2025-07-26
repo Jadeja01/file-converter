@@ -1,34 +1,22 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { operatiosns } from "../(components)/convert/listofconv";
 import Link from "next/link";
 
 export default function OperationPage() {
-  
-  const { operation } = useParams();
-  console.log("Operation:", operation);
-  const op = operatiosns.find((op) => op.href === "/" + operation);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState([]);
   const [error, setError] = useState(null);
 
-  if (!op) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-100">
-        <div className="text-2xl font-bold text-red-600">
-          Operation not found
-        </div>
-      </main>
-    );
-  }
-  
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    console.log("Form data submitted:", formData);
     const files = formData.getAll("file");
+    const fields = formData.getAll("ranges");
+    console.log('fields', fields);
+    
     setFormData(files);
     console.log("Files", files);
 
@@ -42,21 +30,21 @@ export default function OperationPage() {
       setError("Please select a file to upload.");
       return;
     }
-
-    if (op.href === "/merge-pdf") {
-      if (files.length < 2) {
-        setError("Please select at least two files to merge.");
-        return;
-      }
+    if (
+      !fields ||
+      fields.length === 0 ||
+      !fields[0]
+    ) {
+      setError("Please enter range to split the pdf.");
+      return;
     }
     
     setLoading(true);
     setError(null);
     setResult(null);
     console.log("Submited data:", formData);
-    console.log("Operation href:", op.href);
 
-    const response = await fetch(`/api${op.href}`, {
+    const response = await fetch('/api/split-pdf', {
       method: "POST",
       body: formData,
     });
@@ -82,8 +70,8 @@ export default function OperationPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-purple-100 to-indigo-100">
       <div className="bg-white bg-opacity-90 rounded-xl shadow-lg p-10 max-w-lg w-full flex flex-col items-center">
-        <h1 className="text-3xl font-bold mb-6 text-indigo-800">{op.value}</h1>
-        <p className="mb-6 text-gray-700 text-center">{op.description}</p>
+        <h1 className="text-3xl font-bold mb-6 text-indigo-800">Split PDF</h1>
+        <p className="mb-6 text-gray-700 text-center">Separate one PDF into multiple files by selecting specific pages or ranges. Quickly extract the pages you need.</p>
         <form
           onSubmit={handleSubmit}
           className="flex flex-col items-center gap-6"
@@ -93,20 +81,25 @@ export default function OperationPage() {
               type="file"
               name="file"
               accept=".pdf"
-              multiple
               className="block w-full text-gray-700 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-[#471396] focus:border-[#471396] p-3 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#471396] file:text-white hover:file:bg-[#7F53AC] cursor-pointer"
             />
           </label>
+          <input
+            type="text"
+            name="ranges"
+            placeholder="Enter page ranges (e.g., 1-3,5,7-8)"
+            className="w-full p-2 border rounded"
+          />
           <button
             type="submit"
             disabled={loading}
             className="bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50 cursor-pointer"
           >
-            {loading ? "Proccessing..." : op.value}
+            {loading ? "Proccessing..." : "Split- PDF"}
           </button>
         </form>
         {/* {extra section for split pdf} */}
-        {op.href === "/split-pdf" && formData.length > 0 && (
+        {/* {op.href === "/split-pdf" && formData.length > 0 && (
           <div className="mt-6 text-center">
             <p className="text-gray-700 mb-2">Enter range to split pdf:</p>
             <form>
@@ -123,7 +116,7 @@ export default function OperationPage() {
               </button>
             </form>
           </div>
-        )}
+        )} */}
         {/* Show download link/result here */}
         {result && (
           <div className="mt-6 text-center">

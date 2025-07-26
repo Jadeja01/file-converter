@@ -153,11 +153,6 @@ export const operatiosns = [
     description: "Edit your PDF by adding text, images, annotations, or highlighting important sections. Make changes directly to your PDF file.",
   },
   {
-    value: "Split PDF",
-    href: "/split-pdf",
-    description: "Separate one PDF into multiple files by selecting specific pages or ranges. Quickly extract the pages you need.",
-  },
-  {
     value: "Rotate PDF",
     href: "/rotate-pdf",
     description: "Rotate pages in your PDF to the correct orientation. Fix upside-down or sideways pages easily.",
@@ -188,7 +183,8 @@ export const operatiosns = [
   {value:"Word to PDF",href:"/word-to-pdf"},
   {value:"JPG to PDF",href:"/jpg-to-pdf"},
   {value:"PNG to PDF",href:"/png-to-pdf"},
-  {value:"Text to PDF", href: "/text-to-pdf" }
+  {value:"Text to PDF", href: "/text-to-pdf" },
+  {value:"PDF to DOCX",description:"Convert PDF to DOCX by one click.", href: "/pdf-to-docx" }
 ];
 
 export const convertPdfOptions = [

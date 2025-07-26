@@ -9,17 +9,18 @@ export default function NavbarPage() {
   return (
     <header className="w-full flex justify-between items-center px-8 py-4 bg-white bg-opacity-90 shadow-md sticky top-0 z-50 backdrop-blur">
       {/* Logo */}
-      <div className="flex items-center gap-2">
+      <Link href="/" className="flex items-center gap-2">
         <span className="text-2xl font-extrabold text-[#471396]">
           🗂️ FriendlyPDF
         </span>
-      </div>
+      </Link>
 
       {/* Navigation Links */}
       <nav className="hidden sm:flex gap-8 text-[#471396] font-semibold relative">
-        <Link href="/" className="hover:text-[#7F53AC]">HOME</Link>
+        {/* <Link href="/" className="hover:text-[#7F53AC]">HOME</Link> */}
         <Link href="/compress-pdf" className="hover:text-[#7F53AC]">COMPRESS PDF</Link>
         <Link href="/edit-pdf" className="hover:text-[#7F53AC]">EDIT PDF</Link>
+        <Link href="/watermark-pdf" className="hover:text-[#7F53AC]">ADD WATERMARK</Link>
         <Link href="/merge-pdf" className="hover:text-[#7F53AC]">MERGE PDF</Link>
         <Link href="/split-pdf" className="hover:text-[#7F53AC]">SPLIT PDF</Link>
 

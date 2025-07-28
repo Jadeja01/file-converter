@@ -31,6 +31,7 @@ export default async function handler(req, res) {
     const uploadedFiles = Array.isArray(uploadedFilesRaw)
       ? uploadedFilesRaw
       : [uploadedFilesRaw];
+    console.log("Uploaded files:", uploadedFiles[0].originalFilename);
 
     if (uploadedFiles.length === 0 || uploadedFiles.some((f) => f.size === 0)) {
       return res
@@ -41,6 +42,8 @@ export default async function handler(req, res) {
     const zip = new AdmZip();
 
     if (uploadedFiles.length === 1) {
+      const originalFilename = uploadedFiles[0].originalFilename;
+      const nameWithoutExtension = path.parse(originalFilename).name;
       const fileData = await fs.readFile(uploadedFiles[0].filepath);
       const pdfDoc = await PDFDocument.load(fileData);
       const pages = pdfDoc.getPages();
@@ -58,7 +61,7 @@ export default async function handler(req, res) {
       });
 
       const modifiedPdf = await pdfDoc.save();
-      const fileName = `paged-${uuidv4()}.pdf`;
+      const fileName = `${nameWithoutExtension}-paged.pdf`;
       const outputFilePath = path.join(process.cwd(), "public", fileName);
       await fs.writeFile(outputFilePath, modifiedPdf);
 
@@ -70,9 +73,9 @@ export default async function handler(req, res) {
       });
     }
 
-    
-
     for (const file of uploadedFiles) {
+      const originalFilename = file.originalFilename;
+      const nameWithoutExtension = path.parse(originalFilename).name;
       const fileData = await fs.readFile(file.filepath);
       const pdfDoc = await PDFDocument.load(fileData);
       const pages = pdfDoc.getPages();
@@ -90,7 +93,7 @@ export default async function handler(req, res) {
       });
 
       const modifiedPdf = await pdfDoc.save();
-      const fileName = `paged-${uuidv4()}.pdf`;
+      const fileName = `${nameWithoutExtension}-paged.pdf`;
       const outputFilePath = path.join(process.cwd(), "public", fileName);
       await fs.writeFile(outputFilePath, modifiedPdf);
 

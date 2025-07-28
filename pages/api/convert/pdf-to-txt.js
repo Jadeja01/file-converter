@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
 
-    const buffer = await fs.readFile(uploadedFiles.filepath);
+    const buffer = await fs.readFile(uploadedFiles[0].filepath);
     const data = await pdfParse(buffer);
 
     const textFileName = `extracted-${uuidv4()}.txt`;

@@ -25,7 +25,7 @@ export const pdfTools = [
     name: "PDF to Word",
     desc: "Convert PDF documconvert/ents to editable Word files.",
     icon: "📝",
-    link: "/convert/pdf-to-word",
+    link: "/convert/pdf-to-docx",
   },
   {
     name: "PDF to JPG",
@@ -217,7 +217,7 @@ export const operatiosns = [
 
 // used
 export const convertPdfOptions = [
-  {value:"PDF to Word",href:"/convert/pdf-to-word"},
+  {value:"PDF to Word",href:"/convert/pdf-to-docx"},
   {value:"PDF to JPG",href:"/convert/pdf-to-jpg"},
   {value:"PDF to PNG",href:"/convert/pdf-to-png"},
   {value:"PDF to Text",href:"/convert/pdf-to-txt"},
@@ -229,7 +229,7 @@ export const convertPdfOptions = [
 
 // used
 export const allPdfTools = [
-  {value:"PDF to Word",href:"/convert/pdf-to-word"},
+  {value:"PDF to Word",href:"/convert/pdf-to-docx"},
   {value:"PDF to JPG",href:"/convert/pdf-to-jpg"},
   {value:"PDF to PNG",href:"/convert/pdf-to-png"},
   {value:"PDF to Text",href:"/convert/pdf-to-txt"},

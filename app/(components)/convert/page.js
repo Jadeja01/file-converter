@@ -23,7 +23,7 @@ export default function ConvertPage() {
               Convert from
             </label>
             <select
-              className="rounded px-4 py-3 border border-indigo-400 focus:ring-2 focus:ring-indigo-400 text-lg w-full"
+              className="cursor-pointer rounded px-4 py-3 border border-indigo-400 focus:ring-2 focus:ring-indigo-400 text-lg w-full"
               value={fromType}
               onChange={(e) => setFromType(e.target.value)}
             >
@@ -40,7 +40,7 @@ export default function ConvertPage() {
               Convert to
             </label>
             <select
-              className="rounded px-4 py-3 border border-indigo-400 focus:ring-2 focus:ring-indigo-400 text-lg w-full"
+              className="cursor-pointer rounded px-4 py-3 border border-indigo-400 focus:ring-2 focus:ring-indigo-400 text-lg w-full"
               value={toType}
               onChange={(e) => setToType(e.target.value)}
             >

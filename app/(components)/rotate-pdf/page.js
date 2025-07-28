@@ -2,34 +2,19 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { operatiosns } from "../listofconv";
 
-export default function ConversionPage() {
-  
-  const { conv_type } = useParams();
-    console.log("Conversion Type:", conv_type);
-  const op = operatiosns.find((op) => op.href === "/convert/" + conv_type);
+export default function RotatePDFPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState([]);
   const [error, setError] = useState(null);
-
-  if (!op) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-100">
-        <div className="text-2xl font-bold text-red-600">
-          Operation not found
-        </div>
-      </main>
-    );
-  }
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    console.log("Form data submitted:", formData);
     const files = formData.getAll("file");
-    setFormData(files);
+    const fields = formData.getAll("angle");
+    console.log('fields', fields);
     console.log("Files", files);
 
     if (
@@ -42,39 +27,37 @@ export default function ConversionPage() {
       setError("Please select a file to upload.");
       return;
     }
-
-    if (op.href === "/merge-pdf") {
-      if (files.length < 2) {
-        setError("Please select at least two files to merge.");
-        return;
-      }
+    if (
+      !fields ||
+      fields.length === 0 ||
+      !fields[0]
+    ) {
+      setError("Please enter angle to rotate the pdf.");
+      return;
     }
     
     setLoading(true);
     setError(null);
     setResult(null);
     console.log("Submited data:", formData);
-    console.log("Operation href:", op.href);
 
-    const response = await fetch(`/api${op.href}`, {
+    const response = await fetch('/api/rotate-pdf', {
       method: "POST",
       body: formData,
     });
     const data = await response.json();
     if (response.ok) {
-      console.log("Response data:", data);
       if (data.success) {
         setLoading(false);
         setResult(data.url);
         // alert(`File processed successfully! Download it from: ${data.url}`);
       } else {
-        console.error('Error:', data.message);
-        
         setError(data.message);
+        console.error("Error:", data.message);
         setLoading(false);
       }
     } else {
-      setError(data.message || "Error occurred");
+      setError(data.message || "An error occurred while processing the file.");
       setLoading(false);
     }
   };
@@ -84,8 +67,8 @@ export default function ConversionPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-purple-100 to-indigo-100">
       <div className="bg-white bg-opacity-90 rounded-xl shadow-lg p-10 max-w-lg w-full flex flex-col items-center">
-        <h1 className="text-3xl font-bold mb-6 text-indigo-800">{op.value}</h1>
-        <p className="mb-6 text-gray-700 text-center">{op.description}</p>
+        <h1 className="text-3xl font-bold mb-6 text-indigo-800">Rotate PDF</h1>
+        <p className="mb-6 text-gray-700 text-center">Rotate pages in your PDF to the correct orientation. Fix upside-down or sideways pages easily.</p>
         <form
           onSubmit={handleSubmit}
           className="flex flex-col items-center gap-6"
@@ -94,17 +77,22 @@ export default function ConversionPage() {
             <input
               type="file"
               name="file"
-              accept=".pdf jpg png txt docx"
-              multiple
+              accept=".pdf"
               className="block w-full text-gray-700 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-[#471396] focus:border-[#471396] p-3 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#471396] file:text-white hover:file:bg-[#7F53AC] cursor-pointer"
             />
           </label>
+          <input
+            type="text"
+            name="angle"
+            placeholder="Enter angle (e.g., 90,180,270)(in-clockwise)"
+            className="w-full p-2 border rounded"
+          />
           <button
             type="submit"
             disabled={loading}
             className="bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50 cursor-pointer"
           >
-            {loading ? "Proccessing..." : op.value}
+            {loading ? "Proccessing..." : "Split- PDF"}
           </button>
         </form>
         

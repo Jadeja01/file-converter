@@ -31,16 +31,15 @@ export default async function handler(req, res) {
   try {
     const { files } = await parseForm(req);
     const uploadedFilesRaw = files.file;
-
-    if (!uploadedFilesRaw) {
+    const uploadedFiles = Array.isArray(uploadedFilesRaw)
+      ? uploadedFilesRaw
+      : [uploadedFilesRaw];
+      
+    if (!uploadedFiles || uploadedFiles.length === 0) {
       return res
         .status(400)
         .json({ success: false, message: "No files uploaded" });
     }
-
-    const uploadedFiles = Array.isArray(uploadedFilesRaw)
-      ? uploadedFilesRaw
-      : [uploadedFilesRaw];
 
     if (uploadedFiles.length === 0 || uploadedFiles.some((f) => f.size === 0)) {
       return res
@@ -112,12 +111,10 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error("Compression failed:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Compression failed",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Compression failed",
+      error: error.message,
+    });
   }
 }

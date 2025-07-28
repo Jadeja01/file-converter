@@ -5,7 +5,6 @@ import { operatiosns } from "../(components)/convert/listofconv";
 import Link from "next/link";
 
 export default function OperationPage() {
-  
   const { operation } = useParams();
   console.log("Operation:", operation);
   const op = operatiosns.find((op) => op.href === "/" + operation);
@@ -23,7 +22,6 @@ export default function OperationPage() {
       </main>
     );
   }
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +47,7 @@ export default function OperationPage() {
         return;
       }
     }
-    
+
     setLoading(true);
     setError(null);
     setResult(null);
@@ -60,8 +58,9 @@ export default function OperationPage() {
       method: "POST",
       body: formData,
     });
+    const data = await response.json();
+    console.log("Response data:", data);
     if (response.ok) {
-      const data = await response.json();
       if (data.success) {
         setLoading(false);
         setResult(data.url);
@@ -72,12 +71,10 @@ export default function OperationPage() {
         setLoading(false);
       }
     } else {
-      setError("An error occurred while processing the file.");
+      setError(data.message || "An error occurred");
       setLoading(false);
     }
   };
-
-  
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-purple-100 to-indigo-100">
@@ -105,7 +102,7 @@ export default function OperationPage() {
             {loading ? "Proccessing..." : op.value}
           </button>
         </form>
-        
+
         {/* Show download link/result here */}
         {result && (
           <div className="mt-6 text-center">

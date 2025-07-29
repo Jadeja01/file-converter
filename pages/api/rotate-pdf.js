@@ -1,3 +1,4 @@
+import AdmZip from "adm-zip";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
@@ -22,34 +23,68 @@ export default async function handler(req, res) {
 
   try {
     const { fields, files } = await parseForm(req);
-    const pdf = files.file;
-    const angle = parseInt(fields.angle || "90");
-    console.log('angle:', angle);
-    
+    const uploadedFilesRaw = files.file;
+    const uploadedFiles = Array.isArray(uploadedFilesRaw)
+      ? uploadedFilesRaw
+      : [uploadedFilesRaw];
+    const angle = parseInt(fields.angle);
+    console.log("angle:", angle);
 
-    if (!pdf || !angle)
+    if (!uploadedFiles || uploadedFiles.length === 0 || !angle) {
       return res.status(400).json({ message: "PDF or angle missing" });
-
-    const pdfBytes = await fs.readFile(pdf[0].filepath);
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-
-    const pages = pdfDoc.getPages();
-    for (const page of pages) {
-      const currentRotation = page.getRotation().angle;
-      page.setRotation(degrees((currentRotation + angle) % 360));
     }
 
-    const modifiedPdf = await pdfDoc.save();
-    const fileName = `rotated-${uuidv4()}.pdf`;
-    const outputPath = path.join(process.cwd(), "public", fileName);
-    await fs.writeFile(outputPath, modifiedPdf);
+    const tempFilePaths = [];
+    const zip = new AdmZip();
 
-    res.status(200).json({ success: true, url: `/${fileName}` });
+    if (uploadedFiles.length === 1) {
+      const pdfBytes = await fs.readFile(uploadedFiles[0].filepath);
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+
+      const pages = pdfDoc.getPages();
+      for (const page of pages) {
+        const currentRotation = page.getRotation().angle;
+        page.setRotation(degrees((currentRotation + angle) % 360));
+      }
+
+      const modifiedPdf = await pdfDoc.save();
+      const fileName = `rotated-${uuidv4()}.pdf`;
+      const outputPath = path.join(process.cwd(), "public", fileName);
+      await fs.writeFile(outputPath, modifiedPdf);
+
+      tempFilePaths.push(outputPath);
+      return res.status(200).json({ success: true, url: `/${fileName}` });
+    }
+
+    for (const file of uploadedFiles) {
+      const pdfBytes = await fs.readFile(file.filepath);
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+
+      const pages = pdfDoc.getPages();
+      for (const page of pages) {
+        const currentRotation = page.getRotation().angle;
+        page.setRotation(degrees((currentRotation + angle) % 360));
+      }
+
+      const modifiedPdf = await pdfDoc.save();
+      const fileName = `rotated-${uuidv4()}.pdf`;
+      const outputPath = path.join(process.cwd(), "public", fileName);
+      await fs.writeFile(outputPath, modifiedPdf);
+      tempFilePaths.push(outputPath);
+      zip.addLocalFile(outputPath);
+    }
+    const zipName = `rotated-${uuidv4()}.zip`;
+    const zipPath = path.join(process.cwd(), "public", zipName);
+    zip.writeZip(zipPath);
+
+    tempFilePaths.forEach((f) => fs.unlink(f));
+
+    return res.status(200).json({ success: true, url: `/${zipName}` });
   } catch (error) {
     console.error("Rotate PDF error:", error);
     return res.status(500).json({
       success: false,
-      message: "Compression failed",
+      message: "Rotation failed",
       error: error.message,
     });
   }

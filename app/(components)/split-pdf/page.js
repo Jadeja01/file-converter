@@ -1,12 +1,9 @@
 "use client";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 
 export default function OperationPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState([]);
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -16,8 +13,6 @@ export default function OperationPage() {
     const files = formData.getAll("file");
     const fields = formData.getAll("ranges");
     console.log('fields', fields);
-    
-    setFormData(files);
     console.log("Files", files);
 
     if (
@@ -48,8 +43,8 @@ export default function OperationPage() {
       method: "POST",
       body: formData,
     });
+    const data = await response.json();
     if (response.ok) {
-      const data = await response.json();
       if (data.success) {
         setLoading(false);
         setResult(data.url);
@@ -60,7 +55,7 @@ export default function OperationPage() {
         setLoading(false);
       }
     } else {
-      setError("An error occurred while processing the file.");
+      setError(data.message || "An error occurred while processing the file.");
       setLoading(false);
     }
   };

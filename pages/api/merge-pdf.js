@@ -22,25 +22,34 @@ const parseForm = (req) => {
 
 export default async function handler(req, res) {
   if (req.method !== "POST")
-    return res.status(405).json({ success: false, message: "Method not allowed" });
+    return res
+      .status(405)
+      .json({ success: false, message: "Method not allowed" });
 
   try {
     const { files } = await parseForm(req);
-    const uploadedFiles = files.file;
+    const uploadedFilesRaw = files.file;
 
-    const fileArray = Array.isArray(uploadedFiles) ? uploadedFiles : [uploadedFiles];
-    console.log('Uploaded files:', fileArray);
-    
-    if (fileArray.length < 2) {
-      return res.status(400).json({ success: false, message: "At least two files are required" });
+    const uploadedFiles = Array.isArray(uploadedFilesRaw)
+      ? uploadedFilesRaw
+      : [uploadedFilesRaw];
+    console.log("Uploaded files:", uploadedFiles);
+
+    if (uploadedFiles.length < 2) {
+      return res
+        .status(400)
+        .json({ success: false, message: "At least two files are required" });
     }
 
     const mergedPdf = await PDFDocument.create();
 
-    for (const file of fileArray) {
+    for (const file of uploadedFiles) {
       const fileBuffer = await readFile(file.filepath);
       const tempPdf = await PDFDocument.load(fileBuffer);
-      const pages = await mergedPdf.copyPages(tempPdf, tempPdf.getPageIndices());
+      const pages = await mergedPdf.copyPages(
+        tempPdf,
+        tempPdf.getPageIndices()
+      );
       pages.forEach((p) => mergedPdf.addPage(p));
     }
 
@@ -53,6 +62,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, url: `/${fileName}` });
   } catch (err) {
     console.error("Merge error:", err);
-    return res.status(500).json({ success: false, message: "Failed to merge PDF" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to merge PDF" });
   }
 }

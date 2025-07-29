@@ -1,7 +1,5 @@
 "use client";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 
 export default function RotatePDFPage() {
   const [result, setResult] = useState(null);
@@ -78,6 +76,7 @@ export default function RotatePDFPage() {
               type="file"
               name="file"
               accept=".pdf"
+              multiple
               className="block w-full text-gray-700 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-[#471396] focus:border-[#471396] p-3 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#471396] file:text-white hover:file:bg-[#7F53AC] cursor-pointer"
             />
           </label>

@@ -37,8 +37,7 @@ export default async function handler(req, res) {
     const uploadedFiles = Array.isArray(uploadedFilesRaw)
       ? uploadedFilesRaw
       : [uploadedFilesRaw];
-      console.log('Uploaded files:', uploadedFiles);
-      
+    console.log("Uploaded files:", uploadedFiles);
 
     if (!uploadedFiles || uploadedFiles.size === 0) {
       return res
@@ -115,6 +114,6 @@ export default async function handler(req, res) {
     console.error("Watermarking failed:", err);
     res
       .status(500)
-      .json({ success: false, message: "Failed to watermark PDF" });
+      .json({ success: false, message: "Failed to watermark PDF",error: err.message, });
   }
 }

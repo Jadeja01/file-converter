@@ -33,7 +33,10 @@ export default async function handler(req, res) {
     const { fields, files } = await parseForm(req);
     console.log("Parsed fields:", fields);
 
-    const uploadedFiles = files.file;
+    const uploadedFilesRaw = files.file;
+    const uploadedFiles = Array.isArray(uploadedFilesRaw)
+      ? uploadedFilesRaw
+      : [uploadedFilesRaw];
 
     if (!uploadedFiles || uploadedFiles.size === 0) {
       return res
@@ -108,6 +111,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error("Split failed:", err);
-    res.status(500).json({ success: false, message: "Failed to split PDF" });
+    res.status(500).json({ success: false, message: "Failed to split PDF",error: err.message, });
   }
 }

@@ -1,7 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { operatiosns } from "../listofconv";
 
 export default function ConversionPage() {
@@ -11,7 +10,6 @@ export default function ConversionPage() {
   const op = operatiosns.find((op) => op.href === "/convert/" + conv_type);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState([]);
   const [error, setError] = useState(null);
 
   if (!op) {
@@ -29,7 +27,6 @@ export default function ConversionPage() {
     e.preventDefault();
     const formData = new FormData(e.target);
     const files = formData.getAll("file");
-    setFormData(files);
     console.log("Files", files);
 
     if (

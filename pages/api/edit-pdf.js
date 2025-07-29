@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export default function editPDF(params) {
+export default async function handler() {
     return NextResponse.json({
         success: false,
         message: "This feature is not implemented yet."

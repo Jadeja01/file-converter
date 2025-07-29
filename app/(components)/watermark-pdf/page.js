@@ -1,7 +1,5 @@
 "use client";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 
 export default function OperationPage() {
   const [result, setResult] = useState(null);
@@ -42,8 +40,8 @@ export default function OperationPage() {
       method: "POST",
       body: formData,
     });
+    const data = await response.json();
     if (response.ok) {
-      const data = await response.json();
       if (data.success) {
         setLoading(false);
         setResult(data.url);
@@ -53,7 +51,7 @@ export default function OperationPage() {
         setLoading(false);
       }
     } else {
-      setError("An error occurred while processing the file.");
+      setError(data.message || "An error occurred while processing the file.");
       setLoading(false);
     }
   };
@@ -61,9 +59,12 @@ export default function OperationPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-purple-100 to-indigo-100">
       <div className="bg-white bg-opacity-90 rounded-xl shadow-lg p-10 max-w-lg w-full flex flex-col items-center">
-        <h1 className="text-3xl font-bold mb-6 text-indigo-800">Add watermark</h1>
+        <h1 className="text-3xl font-bold mb-6 text-indigo-800">
+          Add watermark
+        </h1>
         <p className="mb-6 text-gray-700 text-center">
-          Add a custom watermark (text or image) to your PDF for branding or copyright protection.
+          Add a custom watermark (text or image) to your PDF for branding or
+          copyright protection.
         </p>
         <form
           onSubmit={handleSubmit}
@@ -92,7 +93,7 @@ export default function OperationPage() {
             {loading ? "Proccessing..." : "Add Watermark"}
           </button>
         </form>
-        
+
         {/* Show download link/result here */}
         {result && (
           <div className="mt-6 text-center">

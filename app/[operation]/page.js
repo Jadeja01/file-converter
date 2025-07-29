@@ -10,7 +10,6 @@ export default function OperationPage() {
   const op = operatiosns.find((op) => op.href === "/" + operation);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState([]);
   const [error, setError] = useState(null);
 
   if (!op) {
@@ -27,7 +26,6 @@ export default function OperationPage() {
     e.preventDefault();
     const formData = new FormData(e.target);
     const files = formData.getAll("file");
-    setFormData(files);
     console.log("Files", files);
 
     if (

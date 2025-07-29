@@ -112,8 +112,12 @@ export default async function handler(req, res) {
       success: true,
       url: `/${zipName}`,
     });
-  } catch (err) {
-    console.error("Page number error:", err);
-    res.status(500).json({ error: "Failed to add page numbers" });
+  } catch (error) {
+    console.error("Failed to add page numbers", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add page numbers",
+      error: error.message,
+    });
   }
 }

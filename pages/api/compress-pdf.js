@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     const uploadedFiles = Array.isArray(uploadedFilesRaw)
       ? uploadedFilesRaw
       : [uploadedFilesRaw];
-      
+
     if (!uploadedFiles || uploadedFiles.length === 0) {
       return res
         .status(400)
@@ -72,7 +72,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ Handle Multiple File Uploads → Compress Each → ZIP
     const zip = new AdmZip();
     const tempPaths = [];
 

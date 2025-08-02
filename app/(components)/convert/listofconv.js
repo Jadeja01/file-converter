@@ -95,24 +95,6 @@ export const pdfTools = [
   },
 ];
 
-// used 
-export const testimonials = [
-  {
-    name: "Amit Sharma",
-    text: "Super easy and fast! Converted my documents in seconds.",
-    avatar: "🧑‍💼",
-  },
-  {
-    name: "Priya Patel",
-    text: "Love the bulk conversion feature. Saved me hours!",
-    avatar: "👩‍💻",
-  },
-  {
-    name: "Rahul Verma",
-    text: "Secure and reliable. Highly recommended.",
-    avatar: "👨‍🔬",
-  },
-];
 
 // used 
 export const operatiosns = [
@@ -221,7 +203,7 @@ export const convertPdfOptions = [
   {value:"PDF to JPG",href:"/convert/pdf-to-jpg"},
   {value:"PDF to PNG",href:"/convert/pdf-to-png"},
   {value:"PDF to Text",href:"/convert/pdf-to-txt"},
-  {value:"Word to PDF",href:"/convert/word-to-pdf"},
+  {value:"Word to PDF",href:"/convert/docx-to-pdf"},
   {value:"JPG to PDF",href:"/convert/jpg-to-pdf"},
   {value:"PNG to PDF",href:"/convert/png-to-pdf"},
   {value:"Text to PDF", href: "/convert/txt-to-pdf" },
@@ -233,7 +215,7 @@ export const allPdfTools = [
   {value:"PDF to JPG",href:"/convert/pdf-to-jpg"},
   {value:"PDF to PNG",href:"/convert/pdf-to-png"},
   {value:"PDF to Text",href:"/convert/pdf-to-txt"},
-  {value:"Word to PDF",href:"/convert/word-to-pdf"},
+  {value:"Word to PDF",href:"/convert/docx-to-pdf"},
   {value:"JPG to PDF",href:"/convert/jpg-to-pdf"},
   {value:"PNG to PDF",href:"/convert/png-to-pdf"},
   {value:"Text to PDF", href: "/convert/txt-to-pdf" },

@@ -9,14 +9,20 @@ export const config = {
   api: { bodyParser: false },
 };
 
-const parseForm = (req) =>
-  new Promise((resolve, reject) => {
-    const form = formidable();
+const parseForm = (req) => {
+  return new Promise((resolve, reject) => {
+    const form = formidable({
+      multiples: true,
+      keepExtensions: true,
+      maxFileSize: 10 * 1024 * 1024, 
+      filter: ({ mimetype }) => mimetype === "application/pdf",
+    });
     form.parse(req, (err, fields, files) => {
       if (err) reject(err);
       else resolve({ fields, files });
     });
   });
+};
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).send("Method not allowed");
@@ -30,14 +36,16 @@ export default async function handler(req, res) {
     const angle = parseInt(fields.angle);
     console.log("angle:", angle);
 
-    if (!uploadedFiles || uploadedFiles.length === 0 || !angle) {
-      return res.status(400).json({ message: "PDF or angle missing" });
+    if (!uploadedFiles || uploadedFiles.length === 0 || uploadedFiles.some((f) => !f || f.size === 0 || f.mimetype !== "application/pdf") || isNaN(angle) || angle < 0 || angle > 360) {
+      return res.status(400).json({ message: "No file uploaded or file is empty or angle is not valid" });
     }
 
     const tempFilePaths = [];
     const zip = new AdmZip();
 
     if (uploadedFiles.length === 1) {
+      const originalFilename = uploadedFiles[0].originalFilename;
+      const nameWithoutExtension = path.parse(originalFilename).name;
       const pdfBytes = await fs.readFile(uploadedFiles[0].filepath);
       const pdfDoc = await PDFDocument.load(pdfBytes);
 
@@ -48,7 +56,7 @@ export default async function handler(req, res) {
       }
 
       const modifiedPdf = await pdfDoc.save();
-      const fileName = `rotated-${uuidv4()}.pdf`;
+      const fileName = `${nameWithoutExtension}-rotated}.pdf`;
       const outputPath = path.join(process.cwd(), "public", fileName);
       await fs.writeFile(outputPath, modifiedPdf);
 
@@ -57,6 +65,8 @@ export default async function handler(req, res) {
     }
 
     for (const file of uploadedFiles) {
+      const originalFilename = file.originalFilename;
+      const nameWithoutExtension = path.parse(originalFilename).name;
       const pdfBytes = await fs.readFile(file.filepath);
       const pdfDoc = await PDFDocument.load(pdfBytes);
 
@@ -67,7 +77,7 @@ export default async function handler(req, res) {
       }
 
       const modifiedPdf = await pdfDoc.save();
-      const fileName = `rotated-${uuidv4()}.pdf`;
+      const fileName = `${nameWithoutExtension}-rotated}.pdf`;
       const outputPath = path.join(process.cwd(), "public", fileName);
       await fs.writeFile(outputPath, modifiedPdf);
       tempFilePaths.push(outputPath);

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { pdfTools,testimonials} from "./(components)/convert/listofconv";
+import { pdfTools} from "./(components)/convert/listofconv";
 
 export default function Home() {
 
@@ -57,30 +57,6 @@ export default function Home() {
                 3. Download Result
               </span>
             </div>
-          </div>
-        </section>
-
-        {/* Testimonials Section */}
-        <section
-          id="testimonials"
-          className="bg-white bg-opacity-90 rounded-xl shadow-lg p-8 max-w-2xl w-full mt-8"
-        >
-          <h2 className="text-2xl font-bold text-[#471396] mb-6 text-center">
-            What Our Users Say
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {testimonials.map((t) => (
-              <div
-                key={t.name}
-                className="flex flex-col items-center justify-center p-6 border rounded-lg shadow bg-white h-56"
-              >
-                <span className="text-4xl mb-2">{t.avatar}</span>
-                <p className="text-gray-800 italic mb-2">
-                  &quot;{t.text}&quot;
-                </p>
-                <span className="font-semibold text-[#471396]">{t.name}</span>
-              </div>
-            ))}
           </div>
         </section>
 

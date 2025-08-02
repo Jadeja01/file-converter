@@ -1,12 +1,11 @@
 "use client";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { operatiosns } from "../(components)/convert/listofconv";
-import Link from "next/link";
+import Image from "next/image";
 
 export default function OperationPage() {
   const { operation } = useParams();
-  console.log("Operation:", operation);
   const op = operatiosns.find((op) => op.href === "/" + operation);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -14,11 +13,30 @@ export default function OperationPage() {
 
   if (!op) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-100">
-        <div className="text-2xl font-bold text-red-600">
+      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-indigo-100 px-4">
+        <div className="text-2xl font-bold text-red-600 text-center">
           Operation not found
         </div>
       </main>
+    );
+  }
+
+  if (operation === "unlock-pdf" || operation === "protect-pdf") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <h3 className="text-2xl sm:text-3xl font-semibold text-gray-800 capitalize mb-6">
+          {operation.replace("-", " ").toUpperCase()}, coming soon...
+        </h3>
+        <Image
+          src="/images/coming-soon.png"
+          alt="Coming Soon"
+          width={384}
+          height={384}
+        />
+        <p className="mt-4 text-gray-500 max-w-md">
+          We&apos;re working hard to bring you this feature. Stay tuned!
+        </p>
+      </div>
     );
   }
 
@@ -26,48 +44,29 @@ export default function OperationPage() {
     e.preventDefault();
     const formData = new FormData(e.target);
     const files = formData.getAll("file");
-    console.log("Files", files);
 
-    if (
-      !files ||
-      files.length === 0 ||
-      !files[0] ||
-      !files[0].name ||
-      files[0].size === 0
-    ) {
+    if (!files || files.length === 0 || !files[0] || !files[0].name || files[0].size === 0) {
       setError("Please select a file to upload.");
       return;
     }
 
-    if (op.href === "/merge-pdf") {
-      if (files.length < 2) {
-        setError("Please select at least two files to merge.");
-        return;
-      }
+    if (op.href === "/merge-pdf" && files.length < 2) {
+      setError("Please select at least two files to merge.");
+      return;
     }
 
     setLoading(true);
     setError(null);
     setResult(null);
-    console.log("Submited data:", formData);
-    console.log("Operation href:", op.href);
 
     const response = await fetch(`/api${op.href}`, {
       method: "POST",
       body: formData,
     });
     const data = await response.json();
-    console.log("Response data:", data);
-    if (response.ok) {
-      if (data.success) {
-        setLoading(false);
-        setResult(data.url);
-        // alert(`File processed successfully! Download it from: ${data.url}`);
-      } else {
-        setError(data.message);
-        console.error("Error:", data.message);
-        setLoading(false);
-      }
+    if (response.ok && data.success) {
+      setLoading(false);
+      setResult(data.url);
     } else {
       setError(data.message || "An error occurred");
       setLoading(false);
@@ -75,13 +74,17 @@ export default function OperationPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-purple-100 to-indigo-100">
-      <div className="bg-white bg-opacity-90 rounded-xl shadow-lg p-10 max-w-lg w-full flex flex-col items-center">
-        <h1 className="text-3xl font-bold mb-6 text-indigo-800">{op.value}</h1>
-        <p className="mb-6 text-gray-700 text-center">{op.description}</p>
+    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-10 sm:p-8 bg-gradient-to-br from-purple-100 to-indigo-100">
+      <div className="bg-white bg-opacity-90 rounded-xl shadow-lg p-6 sm:p-10 max-w-lg w-full flex flex-col items-center">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-indigo-800 text-center">
+          {op.value}
+        </h1>
+        <p className="mb-6 text-gray-700 text-center text-sm sm:text-base">
+          {op.description}
+        </p>
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col items-center gap-6"
+          className="flex flex-col items-center gap-6 w-full"
         >
           <label className="w-full">
             <input
@@ -95,22 +98,22 @@ export default function OperationPage() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50 cursor-pointer"
+            className="w-full sm:w-auto text-center bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50"
           >
-            {loading ? "Proccessing..." : op.value}
+            {loading ? "Processing..." : op.value}
           </button>
         </form>
 
-        {/* Show download link/result here */}
         {result && (
-          <div className="mt-6 text-center">
-            <a href={result} download className="text-blue-600 hover:underline">
+          <div className="mt-6 text-center break-all">
+            <a href={result} download className="text-blue-600 hover:underline text-sm sm:text-base">
               Download Result
             </a>
           </div>
         )}
+
         {error && (
-          <div className="mt-4 text-red-600 text-center">
+          <div className="mt-4 text-red-600 text-center text-sm sm:text-base">
             <p>Error: {error}</p>
           </div>
         )}

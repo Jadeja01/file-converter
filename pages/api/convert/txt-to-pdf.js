@@ -1,3 +1,4 @@
+import AdmZip from "adm-zip";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
@@ -8,7 +9,7 @@ export const config = {
   api: { bodyParser: false },
 };
 
-const parseForm = (req) =>{
+const parseForm = (req) => {
   return new Promise((resolve, reject) => {
     const form = formidable({ keepExtensions: true });
     form.parse(req, (err, fields, files) => {
@@ -50,52 +51,111 @@ export default async function handler(req, res) {
     const uploadedFilesRaw = files.file;
     const uploadedFiles = Array.isArray(uploadedFilesRaw) ? uploadedFilesRaw : [uploadedFilesRaw];
 
-    if (!uploadedFiles || uploadedFiles.size === 0) {
-      return res.status(400).json({ success: false, message: "No file uploaded" });
+    if (!uploadedFiles || uploadedFiles[0].size === 0) {
+      return res.status(400).json({ success: false, message: "No file uploaded or file is empty" });
     }
 
-    const buffer = await fs.readFile(uploadedFiles[0].filepath);
-    const textContent = buffer.toString();
+    const tempFilePaths = [];
+    const zip = new AdmZip();
 
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontSize = 12;
-    const margin = 40;
-    const lineHeight = 18;
+    if (uploadedFiles.length === 1) {
+      const originalFilename = uploadedFiles[0].originalFilename;
+      const nameWithoutExtension = path.parse(originalFilename).name;
+      const buffer = await fs.readFile(uploadedFiles[0].filepath);
+      const textContent = buffer.toString();
+      const pdfDoc = await PDFDocument.create();
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontSize = 12;
+      const margin = 40;
+      const lineHeight = 18;
 
-    let page = pdfDoc.addPage();
-    let { width, height } = page.getSize();
-    let y = height - margin;
+      let page = pdfDoc.addPage();
+      let { width, height } = page.getSize();
+      let y = height - margin;
 
-    const paragraphs = textContent.split(/\r?\n/);
-    for (const paragraph of paragraphs) {
-      const lines = wrapText(paragraph, font, fontSize, width - 2 * margin);
-      for (const line of lines) {
-        if (y < margin + lineHeight) {
-          page = pdfDoc.addPage();
-          y = height - margin;
+      const paragraphs = textContent.split(/\r?\n/);
+      for (const paragraph of paragraphs) {
+        const lines = wrapText(paragraph, font, fontSize, width - 2 * margin);
+        for (const line of lines) {
+          if (y < margin + lineHeight) {
+            page = pdfDoc.addPage();
+            y = height - margin;
+          }
+
+          page.drawText(line, {
+            x: margin,
+            y,
+            size: fontSize,
+            font,
+            color: rgb(0, 0, 0),
+          });
+          y -= lineHeight;
         }
-
-        page.drawText(line, {
-          x: margin,
-          y,
-          size: fontSize,
-          font,
-          color: rgb(0, 0, 0),
-        });
-        y -= lineHeight;
+        y -= lineHeight; // Extra space between paragraphs
       }
-      y -= lineHeight; // Extra space between paragraphs
+
+      const pdfBytes = await pdfDoc.save();
+      const fileName = `${nameWithoutExtension}-converted.pdf`;
+      const outputPath = path.join(process.cwd(), "public", fileName);
+      await fs.writeFile(outputPath, pdfBytes);
+      tempFilePaths.push(outputPath);
+
+      return res.status(200).json({ success: true, url: `/${fileName}` });
     }
 
-    const pdfBytes = await pdfDoc.save();
-    const fileName = `converted-${uuidv4()}.pdf`;
-    const outputPath = path.join(process.cwd(), "public", fileName);
-    await fs.writeFile(outputPath, pdfBytes);
+    for (const file of uploadedFiles) {
+      const originalFilename = file.originalFilename;
+      const nameWithoutExtension = path.parse(originalFilename).name;
+      const buffer = await fs.readFile(file.filepath);
+      const textContent = buffer.toString();
+      const pdfDoc = await PDFDocument.create();
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontSize = 12;
+      const margin = 40;
+      const lineHeight = 18;
 
-    return res.status(200).json({ success: true, url: `/${fileName}` });
+      let page = pdfDoc.addPage();
+      let { width, height } = page.getSize();
+      let y = height - margin;
+
+      const paragraphs = textContent.split(/\r?\n/);
+      for (const paragraph of paragraphs) {
+        const lines = wrapText(paragraph, font, fontSize, width - 2 * margin);
+        for (const line of lines) {
+          if (y < margin + lineHeight) {
+            page = pdfDoc.addPage();
+            y = height - margin;
+          }
+
+          page.drawText(line, {
+            x: margin,
+            y,
+            size: fontSize,
+            font,
+            color: rgb(0, 0, 0),
+          });
+          y -= lineHeight;
+        }
+        y -= lineHeight; // Extra space between paragraphs
+      }
+
+      const pdfBytes = await pdfDoc.save();
+      const fileName = `${nameWithoutExtension}-converted.pdf`;
+      const outputPath = path.join(process.cwd(), "public", fileName);
+      await fs.writeFile(outputPath, pdfBytes);
+      tempFilePaths.push(outputPath);
+      zip.addLocalFile(outputPath);
+    }
+    const zipFileName = `converted-${uuidv4()}.zip`;
+    const zipFilePath = path.join(process.cwd(), "public", zipFileName);
+    zip.writeZip(zipFilePath);
+
+    await Promise.all(tempFilePaths.map((filePath) => fs.unlink(filePath)));
+
+
+    return res.status(200).json({ success: true, url: `/${zipFileName}` });
   } catch (error) {
     console.error("Text to PDF failed:", error);
-    res.status(500).json({ success: false, message: "Failed to convert text to PDF" });
+    res.status(500).json({ success: false, message: "Failed to convert text to PDF", error: "Conversion failed" });
   }
 }

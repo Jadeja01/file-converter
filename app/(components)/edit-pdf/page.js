@@ -1,9 +1,21 @@
-export default function EditPDF(params) {
-    return <div>
-        <h1 className="text-2xl font-bold text-center mt-8">Edit PDF</h1>
-        <p className="text-center text-gray-600 mt-4">This feature is not implemented yet.</p>
-        <div className="flex justify-center mt-8">
-            {/* <img src="/images/coming-soon.png" alt="Coming Soon" className="w-64 h-64" /> */}
-        </div>
+import Image from "next/image";
+
+export default function EditPDFPage() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 py-10">
+      <h3 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-800 capitalize mb-6">
+        EDIT PDF, coming soon...
+      </h3>
+      <Image
+        src="/images/coming-soon.png"
+        alt="Coming Soon"
+        width={384}
+        height={384}
+        className="w-64 sm:w-80 md:w-96 h-auto"
+      />
+      <p className="mt-4 text-gray-500 max-w-md text-sm sm:text-base">
+        We&apos;re working hard to bring you this feature. Stay tuned!
+      </p>
     </div>
-};
+  );
+}

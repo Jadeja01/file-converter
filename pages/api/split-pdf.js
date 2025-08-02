@@ -14,7 +14,12 @@ export const config = {
 
 const parseForm = (req) => {
   return new Promise((resolve, reject) => {
-    const form = formidable({ multiples: false, keepExtensions: true });
+    const form = formidable({
+      multiples: true,
+      keepExtensions: true,
+      maxFileSize: 10 * 1024 * 1024,
+      filter: ({ mimetype }) => mimetype === "application/pdf",
+    });
     form.parse(req, (err, fields, files) => {
       if (err) reject(err);
       else resolve({ fields, files });
@@ -38,10 +43,10 @@ export default async function handler(req, res) {
       ? uploadedFilesRaw
       : [uploadedFilesRaw];
 
-    if (!uploadedFiles || uploadedFiles.size === 0) {
+    if (!uploadedFiles || uploadedFiles.length === 0 || uploadedFiles.some((f) => !f || f.size === 0 || f.mimetype !== "application/pdf")) {
       return res
         .status(400)
-        .json({ success: false, message: "No file uploaded" });
+        .json({ success: false, message: "No file uploaded or file is empty" });
     }
 
     const ranges = fields.ranges;
@@ -58,6 +63,7 @@ export default async function handler(req, res) {
     for (const range of ranges) {
       const parts = range.split(",").map((p) => p.trim());
       console.log("Parts:", parts);
+
       for (const range of parts) {
         console.log("Processing range:", range);
         const pages = new Set();
@@ -65,7 +71,7 @@ export default async function handler(req, res) {
         if (range.includes("-")) {
           const [start, end] = range.split("-").map(Number);
           for (let i = start; i <= end; i++) {
-            pages.add(i - 1); // pdf-lib is 0-based
+            pages.add(i - 1);
           }
         } else {
           pages.add(Number(range) - 1);
@@ -87,7 +93,7 @@ export default async function handler(req, res) {
         copiedPages.forEach((page) => splitter.addPage(page));
 
         const finalBuffer = await splitter.save();
-        const fileName = `split-${uuidv4()}.pdf`;
+        const fileName = `splited-page-${range.replace(/[^0-9-]/g, '')}-${uuidv4()}.pdf`;
         const filePath = path.join(process.cwd(), "public", fileName);
 
         await fs.writeFile(filePath, finalBuffer);
@@ -100,7 +106,6 @@ export default async function handler(req, res) {
     const zipPath = path.join(process.cwd(), "public", zipName);
     zip.writeZip(zipPath);
 
-    // Clean up temporary PDFs
     await Promise.all(
       tempSplitedFilePaths.map((filePath) => fs.unlink(filePath))
     );
@@ -111,6 +116,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error("Split failed:", err);
-    res.status(500).json({ success: false, message: "Failed to split PDF",error: err.message, });
+    res.status(500).json({ success: false, message: "Failed to split PDF", error: err.message });
   }
 }

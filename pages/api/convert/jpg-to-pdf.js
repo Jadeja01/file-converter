@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     if (uploadedImages.length > 10) {
       return res
         .status(400)
-        .json({ success: false, message: "Too many images uploaded" });
+        .json({ success: false, message: "Too many images uploaded(Max:10)" });
     }
 
     const pdfDoc = await PDFDocument.create();
@@ -66,13 +66,13 @@ export default async function handler(req, res) {
     const outPath = path.join(process.cwd(), "public", filename);
     await fs.writeFile(outPath, finalPdf);
 
-    return res.status(200).json({success:true, url: `/${filename}` });
+    return res.status(200).json({ success: true, url: `/${filename}` });
   } catch (error) {
     console.error("JPG to PDF error:", error);
     return res.status(500).json({
       success: false,
-      message: "Compression failed",
-      error: "Failed to convert JPG to PDF",
+      message: "Failed to convert JPG to PDF",
+      error: "Conversion failed",
     });
   }
 }

@@ -14,7 +14,7 @@ export default function NavbarPage() {
         <div className="flex items-center gap-3">
           {/* Hamburger Icon */}
           <button
-            className="2xl:hidden text-[#471396] text-xl p-2 hover:bg-purple-50 rounded-lg transition-all duration-200 flex items-center justify-center border border-[#471396]"
+            className="cursor-pointer 2xl:hidden text-[#471396] text-xl p-2 hover:bg-purple-50 rounded-lg transition-all duration-200 flex items-center justify-center border border-[#471396]"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <div className="relative w-6 h-6 flex flex-col justify-center">
@@ -82,7 +82,7 @@ export default function NavbarPage() {
 
           {/* Desktop Buy Me a Coffee */}
           <div className="hover:text-[#7F53AC] transition-colors duration-200 px-2 py-1 rounded">
-            <a href="https://buymeacoffee.com/jadejatirtv"  target="_blank" rel="noopener noreferrer" className="cursor-pointer">
+            <a href={process.env.NEXT_PUBLIC_BUY_ME_COFFEE}  target="_blank" rel="noopener noreferrer" className="cursor-pointer">
               <Image
                 src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
                 alt="Buy Me A Coffee"
@@ -111,7 +111,7 @@ export default function NavbarPage() {
         <div className={`absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-white shadow-2xl transform transition-all duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{ zIndex: 10000 }}>
           <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-purple-50 to-indigo-50">
             <span className="text-lg font-bold text-[#471396]">Menu</span>
-            <button onClick={() => setIsMobileMenuOpen(false)} className="text-[#471396] p-2 hover:bg-white hover:shadow-md rounded-lg transition-all">
+            <button onClick={() => setIsMobileMenuOpen(false)} className="text-[#471396] p-2 cursor-pointer hover:bg-white hover:shadow-md rounded-lg transition-all">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -161,7 +161,7 @@ export default function NavbarPage() {
 
             {/* Mobile Buy Me a Coffee */}
             <div className="hover:text-[#7F53AC] transition-colors duration-200 px-2 py-1 rounded">
-            <a href={process.env.BUY_ME_COFFEE} target="_blank" rel="noopener noreferrer" className="cursor-pointer">
+            <a href={process.env.NEXT_PUBLIC_BUY_ME_COFFEE} target="_blank" rel="noopener noreferrer" className="cursor-pointer">
               <Image
                 src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
                 alt="Buy Me A Coffee"

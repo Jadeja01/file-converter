@@ -7,7 +7,6 @@ import Image from "next/image";
 export default function OperationPage() {
   const { operation } = useParams();
   const op = operatiosns.find((op) => op.href === "/" + operation);
-  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -57,20 +56,41 @@ export default function OperationPage() {
 
     setLoading(true);
     setError(null);
-    setResult(null);
 
-    const response = await fetch(`/api${op.href}`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    console.log('Data from API:', data);
-    
-    if (response.ok && data.success) {
-      setLoading(false);
-      setResult(data.url);
-    } else {
-      setError(data.message || "An error occurred");
+    try {
+      const response = await fetch(`/api${op.href}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errText = await response.json();
+        setError(errText.message || "An error occurred while processing the file.");
+        setLoading(false);
+        return;
+      }
+
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = `${operation}-result.pdf`;
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match && match[1]) filename = match[1];
+      }
+
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "An error occurred");
+    } finally {
       setLoading(false);
     }
   };
@@ -84,10 +104,7 @@ export default function OperationPage() {
         <p className="mb-6 text-gray-700 text-center text-sm sm:text-base">
           {op.description}
         </p>
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col items-center gap-6 w-full"
-        >
+        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-6 w-full">
           <label className="w-full">
             <input
               type="file"
@@ -100,19 +117,11 @@ export default function OperationPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full cursor-pointer sm:w-auto text-center bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50"
+            className="w-full sm:w-auto text-center bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50"
           >
             {loading ? "Processing..." : op.value}
           </button>
         </form>
-
-        {result && (
-          <div className="mt-6 text-center break-all">
-            <a href={result} download className="text-blue-600 hover:underline text-sm sm:text-base">
-              Download Result
-            </a>
-          </div>
-        )}
 
         {error && (
           <div className="mt-4 text-red-600 text-center text-sm sm:text-base">

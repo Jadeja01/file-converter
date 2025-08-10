@@ -34,7 +34,6 @@ export default async function handler(req, res) {
       ? uploadedFilesRaw
       : [uploadedFilesRaw];
     const angle = parseInt(fields.angle);
-    console.log("angle:", angle);
 
     if (!uploadedFiles || uploadedFiles.length === 0 || uploadedFiles.some((f) => !f || f.size === 0 || f.mimetype !== "application/pdf") || isNaN(angle) || angle < 0 || angle > 360) {
       return res.status(400).json({ message: "No file uploaded or file is empty or angle is not valid" });

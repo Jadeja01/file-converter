@@ -37,12 +37,10 @@ export default async function handler(req, res) {
     const { fields, files } = await parseForm(req);
     const uploadedFilesRaw = files.file;
     const watermarkText = fields.watermark_text?.[0] || "FriendlyPDF";
-    console.log("Watermark text:", watermarkText);
 
     const uploadedFiles = Array.isArray(uploadedFilesRaw)
       ? uploadedFilesRaw
       : [uploadedFilesRaw];
-    console.log("Uploaded files:", uploadedFiles);
 
     if (!uploadedFiles || uploadedFiles.length === 0 || uploadedFiles.some((f) => !f || f.size === 0 || f.mimetype !== "application/pdf")) {
       return res

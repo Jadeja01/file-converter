@@ -36,7 +36,6 @@ export default async function handler(req, res) {
 
   try {
     const { fields, files } = await parseForm(req);
-    console.log("Parsed fields:", fields);
 
     const uploadedFilesRaw = files.file;
     const uploadedFiles = Array.isArray(uploadedFilesRaw)
@@ -50,7 +49,6 @@ export default async function handler(req, res) {
     }
 
     const ranges = fields.ranges;
-    console.log("Parsed ranges:", ranges);
 
     if (!ranges || typeof ranges[0] !== "string") {
       return res
@@ -62,10 +60,8 @@ export default async function handler(req, res) {
     const zip = new AdmZip();
     for (const range of ranges) {
       const parts = range.split(",").map((p) => p.trim());
-      console.log("Parts:", parts);
 
       for (const range of parts) {
-        console.log("Processing range:", range);
         const pages = new Set();
 
         if (range.includes("-")) {
@@ -78,7 +74,6 @@ export default async function handler(req, res) {
         }
 
         const pageIndices = Array.from(pages).filter((n) => !isNaN(n));
-        console.log("Page indices:", pageIndices);
         if (!pageIndices.length) {
           return res
             .status(400)
@@ -99,7 +94,6 @@ export default async function handler(req, res) {
         await fs.writeFile(filePath, finalBuffer);
         zip.addLocalFile(filePath);
         tempSplitedFilePaths.push(filePath);
-        console.log("Saving split file:", filePath);
       }
     }
     const zipName = `splited-${uuidv4()}.zip`;

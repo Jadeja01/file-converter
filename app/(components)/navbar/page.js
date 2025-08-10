@@ -41,8 +41,8 @@ export default function NavbarPage() {
           <Link href="/watermark-pdf" className="hidden lg:block hover:text-[#7F53AC] transition-colors duration-200 px-2 py-1 rounded">WATERMARK</Link>
 
           {/* Convert PDF Dropdown */}
-          <div className="relative group hidden xl:block">
-            <button className="hover:text-[#7F53AC] transition duration-200 px-2 py-1 flex items-center">
+          <div className="cursor-pointer relative group hidden xl:block">
+            <button className="cursor-pointer hover:text-[#7F53AC] transition duration-200 px-2 py-1 flex items-center">
               CONVERT PDF
               <svg className="ml-1 w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -61,8 +61,8 @@ export default function NavbarPage() {
           </div>
 
           {/* All Tools Dropdown */}
-          <div className="relative group hidden 2xl:block">
-            <button className="hover:text-[#7F53AC] transition duration-200 px-2 py-1 flex items-center">
+          <div className="cursor-pointer relative group hidden 2xl:block">
+            <button className="cursor-pointer hover:text-[#7F53AC] transition duration-200 px-2 py-1 flex items-center">
               ALL PDF TOOLS
               <svg className="ml-1 w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -136,7 +136,7 @@ export default function NavbarPage() {
             </div>
 
             {/* Convert PDF */}
-            <div>
+            <div> 
               <h3 className="font-bold text-[#471396] mb-3">Convert PDF</h3>
               <div className="space-y-1 max-h-48 overflow-y-auto">
                 {convertPdfOptions.map((opt, idx) => (

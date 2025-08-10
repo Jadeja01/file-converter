@@ -64,6 +64,8 @@ export default function OperationPage() {
       body: formData,
     });
     const data = await response.json();
+    console.log('Data from API:', data);
+    
     if (response.ok && data.success) {
       setLoading(false);
       setResult(data.url);

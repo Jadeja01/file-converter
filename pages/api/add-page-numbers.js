@@ -2,7 +2,6 @@
 import formidable from "formidable";
 import fs from "fs/promises";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
-import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import AdmZip from "adm-zip";
 
@@ -43,17 +42,11 @@ export default async function handler(req, res) {
       !uploadedFiles.length ||
       uploadedFiles.some((f) => !f || f.size === 0 || f.mimetype !== "application/pdf")
     ) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Only non-empty PDF files are allowed." });
+      return res.status(400).json({ success: false, message: "Only non-empty PDF files are allowed." });
     }
-
-    const tempFilePaths = [];
-    const zip = new AdmZip();
 
     if (uploadedFiles.length === 1) {
       const file = uploadedFiles[0];
-      const nameWithoutExtension = path.parse(file.originalFilename).name;
       const fileData = await fs.readFile(file.filepath);
       const pdfDoc = await PDFDocument.load(fileData);
       const pages = pdfDoc.getPages();
@@ -71,15 +64,17 @@ export default async function handler(req, res) {
       });
 
       const modifiedPdf = await pdfDoc.save();
-      const fileName = `${nameWithoutExtension}-paged.pdf`;
-      const outputFilePath = path.join(process.cwd(), "public", fileName);
-      await fs.writeFile(outputFilePath, modifiedPdf);
 
-      return res.status(200).json({ success: true, url: `/${fileName}` });
+      // ✅ Send buffer as downloadable PDF
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", 'attachment; filename="paged-output.pdf"');
+      return res.send(Buffer.from(modifiedPdf));
     }
+
+    // For multiple files: zip them and send
+    const zip = new AdmZip();
 
     for (const file of uploadedFiles) {
-      const nameWithoutExtension = path.parse(file.originalFilename).name;
       const fileData = await fs.readFile(file.filepath);
       const pdfDoc = await PDFDocument.load(fileData);
       const pages = pdfDoc.getPages();
@@ -97,21 +92,17 @@ export default async function handler(req, res) {
       });
 
       const modifiedPdf = await pdfDoc.save();
-      const fileName = `${nameWithoutExtension}-paged.pdf`;
-      const outputFilePath = path.join(process.cwd(), "public", fileName);
-      await fs.writeFile(outputFilePath, modifiedPdf);
+      const fileName = file.originalFilename.replace(/\.pdf$/, '') + "-paged.pdf";
 
-      tempFilePaths.push(outputFilePath);
-      zip.addLocalFile(outputFilePath);
+      zip.addFile(fileName, Buffer.from(modifiedPdf));
     }
 
-    const zipName = `paged-${uuidv4()}.zip`;
-    const zipPath = path.join(process.cwd(), "public", zipName);
-    zip.writeZip(zipPath);
+    const zipBuffer = zip.toBuffer();
 
-    await Promise.all(tempFilePaths.map((fp) => fs.unlink(fp)));
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader("Content-Disposition", `attachment; filename="paged-files-${uuidv4().slice(0, 6)}.zip"`);
+    return res.send(zipBuffer);
 
-    return res.status(200).json({ success: true, url: `/${zipName}` });
   } catch (error) {
     console.error("Failed to add page numbers", error);
     return res.status(500).json({

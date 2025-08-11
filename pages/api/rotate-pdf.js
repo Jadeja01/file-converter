@@ -14,9 +14,10 @@ const parseForm = (req) => {
     const form = formidable({
       multiples: true,
       keepExtensions: true,
-      maxFileSize: 10 * 1024 * 1024, 
-      filter: ({ mimetype }) => mimetype === "application/pdf",
+      maxFileSize: 10 * 1024 * 1024, // 10 MB
+      filter: ({ mimetype }) => mimetype === "application/pdf"
     });
+
     form.parse(req, (err, fields, files) => {
       if (err) reject(err);
       else resolve({ fields, files });
@@ -34,17 +35,19 @@ export default async function handler(req, res) {
       ? uploadedFilesRaw
       : [uploadedFilesRaw];
     const angle = parseInt(fields.angle);
+    
 
     if (!uploadedFiles || uploadedFiles.length === 0 || uploadedFiles.some((f) => !f || f.size === 0 || f.mimetype !== "application/pdf") || isNaN(angle) || angle < 0 || angle > 360) {
       return res.status(400).json({ message: "No file uploaded or file is empty or angle is not valid" });
     }
 
-    const tempFilePaths = [];
-    const zip = new AdmZip();
+    if (uploadedFiles.length > 5) {
+      return res.status(400).json({ success: false, message: "You can upload a maximum of 5 files." });
+    }
 
     if (uploadedFiles.length === 1) {
-      const originalFilename = uploadedFiles[0].originalFilename;
-      const nameWithoutExtension = path.parse(originalFilename).name;
+      const file = uploadedFiles[0];
+      const nameWithoutExtension = path.parse(file.originalFilename).name;
       const pdfBytes = await fs.readFile(uploadedFiles[0].filepath);
       const pdfDoc = await PDFDocument.load(pdfBytes);
 
@@ -55,17 +58,19 @@ export default async function handler(req, res) {
       }
 
       const modifiedPdf = await pdfDoc.save();
-      const fileName = `${nameWithoutExtension}-rotated}.pdf`;
-      const outputPath = path.join(process.cwd(), "public", fileName);
-      await fs.writeFile(outputPath, modifiedPdf);
 
-      tempFilePaths.push(outputPath);
-      return res.status(200).json({ success: true, url: `/${fileName}` });
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${nameWithoutExtension}-rotated.pdf"`
+      );
+      return res.send(Buffer.from(modifiedPdf));
     }
 
+    const zip = new AdmZip();
+
     for (const file of uploadedFiles) {
-      const originalFilename = file.originalFilename;
-      const nameWithoutExtension = path.parse(originalFilename).name;
+      const nameWithoutExtension = path.parse(file.originalFilename).name;
       const pdfBytes = await fs.readFile(file.filepath);
       const pdfDoc = await PDFDocument.load(pdfBytes);
 
@@ -76,24 +81,22 @@ export default async function handler(req, res) {
       }
 
       const modifiedPdf = await pdfDoc.save();
-      const fileName = `${nameWithoutExtension}-rotated}.pdf`;
-      const outputPath = path.join(process.cwd(), "public", fileName);
-      await fs.writeFile(outputPath, modifiedPdf);
-      tempFilePaths.push(outputPath);
-      zip.addLocalFile(outputPath);
+
+      zip.addFile(`${nameWithoutExtension}-rotated.pdf`, Buffer.from(modifiedPdf));
     }
-    const zipName = `rotated-${uuidv4()}.zip`;
-    const zipPath = path.join(process.cwd(), "public", zipName);
-    zip.writeZip(zipPath);
+    const zipBuffer = zip.toBuffer();
 
-    tempFilePaths.forEach((f) => fs.unlink(f));
-
-    return res.status(200).json({ success: true, url: `/${zipName}` });
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="rotated-files-${uuidv4()}.zip"`
+    );
+    return res.send(zipBuffer);
   } catch (error) {
-    console.error("Rotate PDF error:", error);
+    console.error("Failed to rotate PDF:", error);
     return res.status(500).json({
       success: false,
-      message: "Rotation failed",
+      message: "Failed to rotate PDF:",
       error: error.message,
     });
   }

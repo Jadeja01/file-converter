@@ -2,7 +2,6 @@
 import { useState } from "react";
 
 export default function RotatePDFPage() {
-  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -10,42 +9,54 @@ export default function RotatePDFPage() {
     e.preventDefault();
     const formData = new FormData(e.target);
     const files = formData.getAll("file");
-    const fields = formData.getAll("angle");
+    const fields = formData.get("angle");
 
-    if (
-      !files ||
-      files.length === 0 ||
-      !files[0] ||
-      !files[0].name ||
-      files[0].size === 0
-    ) {
+    if (!files || files.length === 0 || !files[0] || !files[0].name || files[0].size === 0) {
       setError("Please select a file to upload.");
       return;
     }
-    if (!fields || fields.length === 0 || !fields[0]) {
-      setError("Please enter angle to rotate the PDF.");
+
+    if (!fields || !fields.trim() || isNaN(fields) || fields < 0 || fields > 360) {
+      setError("Please enter a valid angle (0-360 degrees).");
       return;
     }
-
     setLoading(true);
     setError(null);
-    setResult(null);
 
-    const response = await fetch("/api/rotate-pdf", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (response.ok) {
-      if (data.success) {
+    try {
+      const response = await fetch(`/api/rotate-pdf`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errText = await response.json();
+        setError(errText.message || "An error occurred while processing the file.");
         setLoading(false);
-        setResult(data.url);
-      } else {
-        setError(data.message);
-        setLoading(false);
+        return;
       }
-    } else {
-      setError(data.message || "An error occurred while processing the file.");
+
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = "rotate-pdf-result.pdf";
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match && match[1]) filename = match[1];
+      }
+
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "An error occurred");
+    } finally {
       setLoading(false);
     }
   };
@@ -88,17 +99,6 @@ export default function RotatePDFPage() {
           </button>
         </form>
 
-        {result && (
-          <div className="mt-6 text-center">
-            <a
-              href={result}
-              download
-              className="text-blue-600 hover:underline break-all text-sm sm:text-base"
-            >
-              Download Result
-            </a>
-          </div>
-        )}
         {error && (
           <div className="mt-4 text-red-600 text-center text-sm sm:text-base">
             <p>Error: {error}</p>

@@ -15,10 +15,9 @@ const parseForm = (req) => {
     const form = formidable({
       multiples: true,
       keepExtensions: true,
-      maxFileSize: 10 * 1024 * 1024, // 10 MB
-      filter: ({ mimetype }) => mimetype === "application/pdf"
+      maxFileSize: 10 * 1024 * 1024, 
+      filter: ({ mimetype }) => mimetype === "application/pdf",
     });
-
     form.parse(req, (err, fields, files) => {
       if (err) reject(err);
       else resolve({ fields, files });

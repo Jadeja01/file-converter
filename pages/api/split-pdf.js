@@ -1,4 +1,3 @@
-// pages/api/split-pdf.js
 import AdmZip from "adm-zip";
 import formidable from "formidable";
 import fs from "fs/promises";
@@ -15,11 +14,12 @@ export const config = {
 const parseForm = (req) => {
   return new Promise((resolve, reject) => {
     const form = formidable({
-      multiples: true,
+      multiples: false,
       keepExtensions: true,
-      maxFileSize: 10 * 1024 * 1024,
+      maxFileSize: 10 * 1024 * 1024, // 10MB
       filter: ({ mimetype }) => mimetype === "application/pdf",
     });
+
     form.parse(req, (err, fields, files) => {
       if (err) reject(err);
       else resolve({ fields, files });
@@ -29,9 +29,7 @@ const parseForm = (req) => {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res
-      .status(405)
-      .json({ success: false, message: "Method not allowed" });
+    return res.status(405).json({ success: false, message: "Method not allowed" });
   }
 
   try {
@@ -41,75 +39,92 @@ export default async function handler(req, res) {
     const uploadedFiles = Array.isArray(uploadedFilesRaw)
       ? uploadedFilesRaw
       : [uploadedFilesRaw];
+    const rangesInput = fields.ranges;
 
-    if (!uploadedFiles || uploadedFiles.length === 0 || uploadedFiles.some((f) => !f || f.size === 0 || f.mimetype !== "application/pdf")) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No file uploaded or file is empty" });
+
+    if (
+      !uploadedFiles.length || !uploadedFiles || uploadedFiles.length === 0 ||
+      uploadedFiles.some((f) => !f || f.size === 0 || f.mimetype !== "application/pdf")
+    ) {
+      return res.status(400).json({ success: false, message: "Only non-empty PDF files are allowed." });
     }
 
-    const ranges = fields.ranges;
-
-    if (!ranges || typeof ranges[0] !== "string") {
-      return res
-        .status(400)
-        .json({ success: false, message: "Page ranges required" });
+    if (!rangesInput || typeof rangesInput[0] !== "string") {
+      return res.status(400).json({ success: false, message: "Valid page ranges required (e.g., 1-3,4,5-6)" });
     }
+    const rangesArray = Array.isArray(rangesInput) ? rangesInput : [rangesInput]
+    const fileBuffer = await fs.readFile(uploadedFiles[0].filepath);
+    const originalDoc = await PDFDocument.load(fileBuffer);
+    const nameWithoutExtension = path.parse(uploadedFiles[0].originalFilename).name;
 
-    const tempSplitedFilePaths = [];
-    const zip = new AdmZip();
-    for (const range of ranges) {
-      const parts = range.split(",").map((p) => p.trim());
+    for (const rangeStr of rangesArray) {
+      const parts = rangeStr.split(",").map((p) => p.trim());
 
-      for (const range of parts) {
+      if (parts.length === 1) {
+        const part = parts[0];
         const pages = new Set();
-
-        if (range.includes("-")) {
-          const [start, end] = range.split("-").map(Number);
-          for (let i = start; i <= end; i++) {
-            pages.add(i - 1);
+        if (part.includes("-")) {
+          const [start, end] = part.split("-").map((n) => parseInt(n, 10));
+          if (isNaN(start) || isNaN(end) || start < 1 || end > originalDoc.getPageCount() || start > end) {
+            return res.status(400).json({ success: false, message: `Invalid range: ${part}` });
           }
+          for (let i = start; i <= end; i++) pages.add(i - 1);
         } else {
-          pages.add(Number(range) - 1);
+          const pageNum = parseInt(part, 10);
+          if (isNaN(pageNum) || pageNum < 1 || pageNum > originalDoc.getPageCount()) {
+            return res.status(400).json({ success: false, message: `Invalid page number: ${part}` });
+          }
+          pages.add(pageNum - 1);
         }
-
-        const pageIndices = Array.from(pages).filter((n) => !isNaN(n));
-        if (!pageIndices.length) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Invalid range input" });
-        }
-
-        const buffer = await fs.readFile(uploadedFiles[0].filepath);
-        const original = await PDFDocument.load(buffer);
         const splitter = await PDFDocument.create();
-
-        const copiedPages = await splitter.copyPages(original, pageIndices);
+        const copiedPages = await splitter.copyPages(originalDoc, Array.from(pages));
         copiedPages.forEach((page) => splitter.addPage(page));
-
         const finalBuffer = await splitter.save();
-        const fileName = `splited-page-${range.replace(/[^0-9-]/g, '')}-${uuidv4()}.pdf`;
-        const filePath = path.join(process.cwd(), "public", fileName);
+        const safeName = part.replace(/[^0-9-]/g, "");
 
-        await fs.writeFile(filePath, finalBuffer);
-        zip.addLocalFile(filePath);
-        tempSplitedFilePaths.push(filePath);
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${nameWithoutExtension}-splited-page-${safeName}.pdf"`
+        );
+        return res.send(Buffer.from(finalBuffer));
+      } else {
+        const zip = new AdmZip();
+        for (const part of parts) {
+          const pages = new Set();
+          if (part.includes("-")) {
+            const [start, end] = part.split("-").map((n) => parseInt(n, 10));
+            if (isNaN(start) || isNaN(end) || start < 1 || end > originalDoc.getPageCount() || start > end) {
+              return res.status(400).json({ success: false, message: `Invalid range: ${part}` });
+            }
+            for (let i = start; i <= end; i++) pages.add(i - 1);
+          } else {
+            const pageNum = parseInt(part, 10);
+            if (isNaN(pageNum) || pageNum < 1 || pageNum > originalDoc.getPageCount()) {
+              return res.status(400).json({ success: false, message: `Invalid page number: ${part}` });
+            }
+            pages.add(pageNum - 1);
+          }
+
+          const splitter = await PDFDocument.create();
+          const copiedPages = await splitter.copyPages(originalDoc, Array.from(pages));
+          copiedPages.forEach((page) => splitter.addPage(page));
+
+          const finalBuffer = await splitter.save();
+          const safeName = part.replace(/[^0-9-]/g, "");
+          zip.addFile(`${nameWithoutExtension}-splited-page-${safeName}.pdf`, Buffer.from(finalBuffer));
+        }
+        const zipBuffer = zip.toBuffer();
+        res.setHeader("Content-Type", "application/zip");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="splitted-files-${uuidv4()}.zip"`
+        );
+        res.send(zipBuffer);
       }
     }
-    const zipName = `splited-${uuidv4()}.zip`;
-    const zipPath = path.join(process.cwd(), "public", zipName);
-    zip.writeZip(zipPath);
-
-    await Promise.all(
-      tempSplitedFilePaths.map((filePath) => fs.unlink(filePath))
-    );
-
-    return res.status(200).json({
-      success: true,
-      url: `/${zipName}`,
-    });
-  } catch (err) {
-    console.error("Split failed:", err);
-    res.status(500).json({ success: false, message: "Failed to split PDF", error: err.message });
+  } catch (error) {
+    console.error("Failed to split PDF:", error);
+    res.status(500).json({ success: false, message: "Failed to split PDF", error: error.message });
   }
 }

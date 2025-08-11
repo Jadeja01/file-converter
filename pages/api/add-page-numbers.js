@@ -1,4 +1,3 @@
-// pages/api/add-page-numbers.js
 import formidable from "formidable";
 import fs from "fs/promises";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";

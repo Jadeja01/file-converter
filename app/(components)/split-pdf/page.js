@@ -88,7 +88,7 @@ export default function SplitPDFPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all"
+            className="cursor-pointer w-full sm:w-auto bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all"
           >
             {loading ? "Processing..." : "Split PDF"}
           </button>

@@ -117,7 +117,7 @@ export default function OperationPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto text-center bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50"
+            className="cursor-pointer w-full sm:w-auto text-center bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50"
           >
             {loading ? "Processing..." : op.value}
           </button>

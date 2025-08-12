@@ -2,7 +2,6 @@
 import { useState } from "react";
 
 export default function WatermarkPDFPage() {
-  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -10,36 +9,51 @@ export default function WatermarkPDFPage() {
     e.preventDefault();
     const formData = new FormData(e.target);
     const files = formData.getAll("file");
-    const fields = formData.getAll("watermark_text");
+    const ranges = formData.getAll("watermark_text");
 
-    if (!files || files.length === 0 || !files[0] || !files[0].name || files[0].size === 0) {
+    if (!files?.length || !files[0]?.name || files[0].size === 0) {
       setError("Please select a file to upload.");
       return;
     }
-    if (!fields || fields.length === 0 || !fields[0]) {
-      setError("Please enter text for the watermark.");
+    if (!ranges?.length || !ranges[0]) {
+      setError("Please enter text to watermark the PDF.");
       return;
     }
 
     setLoading(true);
     setError(null);
-    setResult(null);
 
-    const response = await fetch("/api/watermark-pdf", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (response.ok) {
-      if (data.success) {
-        setLoading(false);
-        setResult(data.url);
-      } else {
-        setError(data.message);
-        setLoading(false);
+    try {
+      const response = await fetch("/api/watermark-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errText = await response.json();
+        throw new Error(errText.message || "An error occurred while processing the file.");
       }
-    } else {
-      setError(data.message || "An error occurred while processing the file.");
+
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = `watermark-pdf-result.pdf`;
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match && match[1]) filename = match[1];
+      }
+      const downloadUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error("Watermark PDF error:", err);
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -76,24 +90,13 @@ export default function WatermarkPDFPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full sm:w-auto text-center bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50"
+            className="cursor-pointer w-full sm:w-auto text-center bg-gradient-to-r from-[#471396] to-[#7F53AC] text-white px-8 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md hover:scale-105 hover:from-[#7F53AC] hover:to-[#471396] transition-all focus:outline-none focus:ring-2 focus:ring-[#471396] focus:ring-opacity-50"
           >
             {loading ? "Processing..." : "Add Watermark"}
           </button>
         </form>
 
-        {/* Result section */}
-        {result && (
-          <div className="mt-6 text-center">
-            <a
-              href={result}
-              download
-              className="text-blue-600 hover:underline break-all text-sm sm:text-base"
-            >
-              Download Result
-            </a>
-          </div>
-        )}
+
 
         {/* Error section */}
         {error && (

@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     if (uploadedFiles.length === 1) {
       const file = uploadedFiles[0];
       const nameWithoutExtension = path.parse(file.originalFilename).name;
-      const pdfBytes = await fs.readFile(uploadedFiles[0].filepath);
+      const pdfBytes = await fs.readFile(file.filepath);
       const pdfDoc = await PDFDocument.load(pdfBytes);
 
       const pages = pdfDoc.getPages();
